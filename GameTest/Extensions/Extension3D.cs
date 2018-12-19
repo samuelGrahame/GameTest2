@@ -224,6 +224,11 @@ namespace PixelEngine3D.Extensions
             return Vector_Add(ref lineStart, ref lineToIntersect);
         }
 
+        public static Triangle GetNonRef(Triangle tri)
+        {
+            return tri;
+        }
+
         public static int Triangle_ClipAgainstPlane(Vector3D plane_p, Vector3D plane_n, ref Triangle in_tri, ref Triangle out_tri1, ref Triangle out_tri2)
         {
             // Make sure plane normal is indeed normal
@@ -247,12 +252,14 @@ namespace PixelEngine3D.Extensions
             float d1 = dist(ref in_tri.p[1]);
             float d2 = dist(ref in_tri.p[2]);
 
-            if (d0 >= 0.0f) { inside_points[nInsidePointCount++] = in_tri.p[0]; }
-            else { outside_points[nOutsidePointCount++] = in_tri.p[0]; }
-            if (d1 >= 0.0f) { inside_points[nInsidePointCount++] = in_tri.p[1]; }
-            else { outside_points[nOutsidePointCount++] = in_tri.p[1]; }
-            if (d2 >= 0.0f) { inside_points[nInsidePointCount++] = in_tri.p[2]; }
-            else { outside_points[nOutsidePointCount++] = in_tri.p[2]; }
+            var in_triN = GetNonRef(in_tri);
+
+            if (d0 >= 0.0f) { inside_points[nInsidePointCount++] = in_triN.p[0]; }
+            else { outside_points[nOutsidePointCount++] = in_triN.p[0]; }
+            if (d1 >= 0.0f) { inside_points[nInsidePointCount++] = in_triN.p[1]; }
+            else { outside_points[nOutsidePointCount++] = in_triN.p[1]; }
+            if (d2 >= 0.0f) { inside_points[nInsidePointCount++] = in_triN.p[2]; }
+            else { outside_points[nOutsidePointCount++] = in_triN.p[2]; }
 
             // Now classify triangle points, and break the input triangle into 
             // smaller output triangles if required. There are four possible
@@ -270,7 +277,7 @@ namespace PixelEngine3D.Extensions
             {
                 // All points lie on the inside of plane, so do nothing
                 // and allow the triangle to simply pass through
-                out_tri1 = new Triangle(in_tri.Color, in_tri.p);
+                out_tri1 = in_triN; // = new Triangle(in_tri.Color, in_tri.p);
 
                 return 1; // Just the one returned original triangle is valid
             }
@@ -281,7 +288,7 @@ namespace PixelEngine3D.Extensions
                 // the plane, the triangle simply becomes a smaller triangle
 
                 // Copy appearance info to new triangle
-                out_tri1.Color = in_tri.Color;                
+                out_tri1.Color = in_triN.Color;                
 
                 // The inside point is valid, so keep that...
                 out_tri1.p[0] = inside_points[0];
@@ -301,8 +308,8 @@ namespace PixelEngine3D.Extensions
                 // represent a quad with two new triangles
 
                 // Copy appearance info to new triangles
-                out_tri1.Color = in_tri.Color;
-                out_tri2.Color = in_tri.Color;
+                out_tri1.Color = in_triN.Color;
+                out_tri2.Color = in_triN.Color;
                 
                 // The first triangle consists of the two inside points and a new
                 // point determined by the location where one side of the triangle
